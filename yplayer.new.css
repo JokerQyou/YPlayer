@@ -138,10 +138,6 @@ input[type='file']{
 	background-position: 15px -559px;
 }
 
-#ctrl #redraw{
-	background-position: 14px -194px;
-}
-
 #ctrl #volume{
 	background-position: 13px -125px;
 }
@@ -150,8 +146,20 @@ input[type='file']{
 	background-position: 13px -414px;
 }
 
+#ctrl #shuffleswitch.true{
+	background-position: -51px -414px;
+}
+
 #ctrl #repeatswitch{
 	background-position: 15px -485px;
+}
+
+#ctrl #repeatswitch.list{
+	background-position: -48px -485px;
+}
+
+#ctrl #repeatswitch.single{
+	background-position: -48px -339px;
 }
 
 

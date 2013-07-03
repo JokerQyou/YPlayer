@@ -337,4 +337,27 @@
 		}
 		return false;
 	});
+	core.ctrls.shuffleswitch.addEventListener('click', function(){
+		if(core.cfg.shuffle){
+			core.cfg.shuffle = false;
+			changeClass(this, 'true', 'false');
+		}else{
+			core.cfg.shuffle = true;
+			changeClass(this, 'false', 'true');
+		}
+		return false;
+	});
+	core.ctrls.repeatswitch.addEventListener('click', function(){
+		var _allowed = ['no', 'list', 'single'];
+		var _nowstate = _allowed.indexOf(core.cfg.loop);
+		var _nextstate;
+		if(_nowstate < _allowed.length - 1){
+			_nextstate = _nowstate + 1;
+		}else{
+			_nextstate = 0;
+		}
+		core.cfg.loop = _allowed[_nextstate];
+		changeClass(this, _allowed[_nowstate], _allowed[_nextstate]);
+		return false;
+	});
 })();
