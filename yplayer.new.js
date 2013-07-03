@@ -40,6 +40,11 @@
 		}
 		return false;
 	};
+
+	function changeClass(element, oldClass, newClass){
+		element.className = element.className.replace(oldClass, newClass);
+	};
+
 	/**
 	 * 一些常用方法的简写
 	 */
@@ -54,18 +59,24 @@
 		audio: new Audio(),
 		now: null,
 		list: [],
+		ready: false,
 		played: [],
 		ctrls: {
 			play: get('#play'),
 			next: get('#next'),
 			file: get('#file'),
 			playlist: get('#playlist'),
+			listswitch: get('#listswitch'),
 			progress: get('#progress'),
 			nowprogress: get('#now'),
-			nowitem: get('#nowitem'),
-			volumebar: get('#volumebar'),
-			volume: get('#volume'),
-			time: get('#time')
+			songtitle: get('#songtitle'),
+			search: get('#keyword'),
+			searchweb: get('#searchweb'),
+			shuffleswitch: get('#shuffleswitch'),
+			repeatswitch: get('#repeatswitch'),
+			redraw: get('#redraw'),
+			mask: get('.mask'),
+			cdmask: get('#cdmask')
 		},
 		cfg: {
 			loop: 'no',
@@ -86,23 +97,10 @@
 				}
 			}
 		}
-	};
-	/**
-	 * 产生对比合适的颜色对
-	 * @return {Array} 产生的颜色对，包含两个颜色
-	 */
-	function randomColors(){
-		var _h, _s, _l, _a, _h1, _s1, _l1, c = [];
-		_h = Math.floor(Math.random() * 360);
-		_s = Math.floor(Math.random() * 100);
-		_l = Math.floor(15 + Math.random() * 70);
-		_a = 1;
-		_h1 = (_h > 240)?(_h - 120):(_h + 120);
-		_s1 = Math.floor(15 + Math.random() * 85);
-		_l1 = ((_l - 50) >= 0)?(_l - 50):(_l + 50);
-		c.push('hsla(' + _h + ', ' + _s + '%, ' + _l + '%, ' + _a + ')');
-		c.push('hsla(' + _h1 + ', ' + _s1 + '%, ' + _l1 + '%, ' + _a + ')');
-		return c;
+		if(core.list.length != 0){
+			core.ready = true
+			showList();
+		}
 	};
 	/**
 	 * 显示列表
@@ -111,41 +109,232 @@
 	function showList(){
 		for(var _i = 0; _i < core.list.length; _i ++){
 			var _name = core.list[_i].name.replace(/\.mp3$|\.m4a$|\.ogg$/i, '').replace(/^\d{2,}(\ |\.|\-)/i, ''),
-				_colorPair = randomColors(),
-				_item = create('li');
+				_item = create('span');
+			_item.className = 'song';
 			_item.innerHTML = _name;
 			_item.title = _name;
 			_item.dataset.songId = _i;
-			_item.style.backgroundColor = _colorPair[0];
-			_item.style.color = _colorPair[1];
 			core.ctrls.playlist.appendChild(_item);
 		}
+		unmask();
+		changeClass(core.ctrls.play, 'add', 'play');
+		switchList();
 	};
 
 	function play(id){
-		if(core.list.length){
-			var _URL = getBlobURL(core.list[id]);
-			core.audio.src = _URL;
-			core.audio.play();
+		if(core.ready){
+			if(!core.audio.src){
+				var _URL = getBlobURL(core.list[id]);
+				core.audio.src = _URL;
+				core.audio.play();
+				core.now = id;
+				core.ctrls.songtitle.innerHTML = core.list[id].name.replace(/\.mp3$|\.m4a$|\.ogg$/i, '').replace(/^\d{2,}(\ |\.|\-)/i, '');
+				var _now = get('[data-song-id="' + id + '"]');
+				_now.className += ' now';
+				changeClass(core.ctrls.cdmask, 'paused', 'running');
+				changeClass(core.ctrls.play, 'play', 'pause');
+				return false;
+			}else{
+				if(id == core.now){
+					if(core.audio.paused){
+						core.audio.play();
+						changeClass(core.ctrls.cdmask, 'paused', 'running');
+						changeClass(core.ctrls.play, 'play', 'pause');
+						return false;
+					}else{
+						return false;
+					}
+				}else{
+					revokeBlobURL(core.audio.src);
+					var _now = get('[data-song-id="' + core.now + '"]');
+					changeClass(_now, 'now', '');
+					var _URL = getBlobURL(core.list[id]);
+					core.audio.src = _URL;
+					core.audio.play();
+					core.now = id;
+					core.ctrls.songtitle.innerHTML = core.list[id].name.replace(/\.mp3$|\.m4a$|\.ogg$/i, '').replace(/^\d{2,}(\ |\.|\-)/i, '');
+					var _now = get('[data-song-id="' + id + '"]');
+					_now.className += ' now';
+					changeClass(core.ctrls.cdmask, 'paused', 'running');
+					changeClass(core.ctrls.play, 'play', 'pause');
+					return false;
+				}
+			}
+		}else{
+			return false;
 		}
+	};
+
+	function pause(){
+		if(!core.audio.paused){
+			core.audio.pause();
+			changeClass(core.ctrls.cdmask, 'running', 'paused');
+			changeClass(core.ctrls.play, 'pause', 'play');
+		}
+	};
+
+	function updateProgress(){
+		if(!core.audio.src){
+			return false;
+		}else{
+			var _audio = core.audio;
+			if(_audio.currentTime > 0 && _audio.currentTime < _audio.duration){
+				var _progress = (100 / _audio.duration) * _audio.currentTime;
+			}else{
+				var _progress = 0;
+			}
+			core.ctrls.nowprogress.style.width = _progress + '%';
+		}
+	};
+
+	function mask(){
+		changeClass(core.ctrls.mask, 'hide', 'show');
+	};
+
+	function unmask(){
+		changeClass(core.ctrls.mask, 'show', 'hide');
+	};
+
+	function switchList(){
+		var _list = core.ctrls.playlist;
+		if(inArray('rhide', _list.classList)){
+			changeClass(_list, 'rhide', 'rshow');
+		}else{
+			changeClass(_list, 'rshow', 'rhide');
+		}
+		return false;
+	};
+
+	function searchList(keyword){
+		var _list = core.ctrls.playlist;
+		for(var _i = 0; _i < _list.children.length; _i ++){
+			if(_list.children[_i].innerHTML.search(keyword) != -1){
+				return _list.children[_i];
+			}
+		}
+		return false;
+	};
+
+	function getNextSong(){
+		if(core.cfg.loop == 'no'){
+			if(core.played.length == core.list.length){
+				return -1;
+			}
+			if(!core.cfg.shuffle){
+				if(core.now == null){
+					return 0;
+				}
+				if(core.now < core.list.length - 1){
+					var _n = core.now + 1;
+				}else{
+					var _n = 0;
+				}
+				if(inArray(_n, core.played)){
+					getNextSong();
+				}else{
+					return _n;
+				}
+			}else{
+				var _n = Math.floor(Math.random() * core.list.length);
+				if(inArray(_n, core.played)){
+					getNextSong();
+				}else{
+					return _n;
+				}
+			}
+		}else if(core.cfg.loop == 'single'){
+			if(core.now){
+				return core.now;
+			}else{
+				return 0;
+			}
+		}else if(core.cfg.loop == 'list'){
+			if(!core.cfg.shuffle){
+				if(core.now == null){
+					return 0;
+				}
+				if(core.now < core.list.length - 1){
+					return core.now + 1;
+				}else{
+					return 0;
+				}
+			}else{
+				var _n = Math.floor(Math.random() * core.list.length);
+				return _n;
+			}
+		}
+	};
+
+	function searchWeb(id){
+		var _API = 'https://www.google.com/search?q=';
+		var _keyword = core.list[id].name.replace(/\.mp3$|\.m4a$|\.ogg$/i, '').replace(/^\d{2,}(\ |\.|\-)/i, '');
+		_API = _API + _keyword;
+		window.open(_API, 'ywebsearch');
 	};
 
 	/**
 	 * 事件绑定
 	 */
 	core.ctrls.play.addEventListener('click', function(){
-		if(!core.list.length){
+		if(!core.ready){
+			mask();
 			core.ctrls.file.click();
-			return false;
+		}else{
+			if(!!core.audio.src){
+				if(core.audio.paused){
+					play(core.now);
+				}else{
+					pause();
+				}
+			}else{
+				var _next = getNextSong();
+				play(_next);
+			}
+		}
+		return false;
+	});
+	core.ctrls.next.addEventListener('click', function(){
+		if(core.ready){
+			var _next = getNextSong();
+			play(_next);
 		}
 	});
 	core.ctrls.file.addEventListener('change', function(){
 		parseDir(this.files);
-		showList();
 	});
 	core.ctrls.playlist.addEventListener('click', function(e){
 		e = e || window.event;
 		var _target = e.target || e.srcElement;
-		play(_target.dataset.songId);
+		if(!!_target.dataset.songId){
+			play(parseInt(_target.dataset.songId));
+		}
+		return false;
+	});
+	core.ctrls.listswitch.addEventListener('click', switchList);
+
+	core.audio.addEventListener('timeupdate', updateProgress);
+	core.ctrls.mask.addEventListener('click', unmask);
+	document.onkeydown = function(e){
+		e = e || window.event;
+		if(e.keyCode == 70 && e.ctrlKey){
+			changeClass(get('#search'), 'lhide', 'lshow');
+			core.ctrls.search.focus();
+			return false;
+		}else if(e.keyCode == 27){
+			changeClass(get('#search'), 'lshow', 'lhide');
+			changeClass(core.ctrls.playlist, 'rshow', 'rhide');
+		}
+	};
+	core.ctrls.search.addEventListener('keydown', function(){
+		var _result = searchList(this.value);
+		if(!!_result){
+			core.ctrls.playlist.scrollTop = _result.offsetTop;
+		}
+	});
+	core.ctrls.searchweb.addEventListener('click', function(){
+		if(core.ready && core.now){
+			searchWeb(core.now);
+		}
+		return false;
 	});
 })();
