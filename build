@@ -1,2 +1,0 @@
-yuicompressor -o yplayer.new.min.js yplayer.new.js
-yuicompressor -o yplayer.new.min.css yplayer.new.css
