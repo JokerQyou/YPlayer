@@ -76,11 +76,13 @@
 			repeatswitch: get('#repeatswitch'),
 			redraw: get('#redraw'),
 			mask: get('.mask'),
-			cdmask: get('#cdmask')
+			cdmask: get('#cdmask'),
+			volume: get('#volume')
 		},
 		cfg: {
 			loop: 'no',
-			shuffle: false
+			shuffle: false,
+			volume: 'full'
 		}
 	};
 	/**
@@ -272,6 +274,18 @@
 		window.open(_API, 'ywebsearch');
 	};
 
+	function updateVolume(str){
+		var _volumes = [0, 0.25, 0.5, 0.75, 1];
+		var _classes = ['muted', 'quarter', 'twoquarter', 'triquarter', 'full'];
+		var _newvolume = _classes.indexOf(str);
+		if(_newvolume != -1){
+			_newvolume = _volumes[_newvolume];
+		}
+		core.audio.volume = _newvolume;
+		console.log(core.audio.volume);
+		return false;
+	};
+
 	/**
 	 * 事件绑定
 	 */
@@ -318,6 +332,7 @@
 		e = e || window.event;
 		if(e.keyCode == 70 && e.ctrlKey){
 			changeClass(get('#search'), 'lhide', 'lshow');
+			changeClass(core.ctrls.playlist, 'rhide', 'rshow');
 			core.ctrls.search.focus();
 			return false;
 		}else if(e.keyCode == 27){
@@ -358,6 +373,26 @@
 		}
 		core.cfg.loop = _allowed[_nextstate];
 		changeClass(this, _allowed[_nowstate], _allowed[_nextstate]);
+		return false;
+	});
+	core.audio.addEventListener('ended', function(){
+		var _next = getNextSong();
+		if(_next != -1){
+			play(_next);
+		}
+	});
+	core.ctrls.volume.addEventListener('click', function(){
+		var _classes = ['muted', 'quarter', 'twoquarter', 'triquarter', 'full'];
+		var _nowvolume = _classes.indexOf(core.cfg.volume);
+		var _nextvolume;
+		if(_nowvolume < _classes.length - 1){
+			_nextvolume = _nowvolume + 1;
+		}else{
+			_nextvolume = 0;
+		}
+		core.cfg.volume = _classes[_nextvolume];
+		updateVolume(core.cfg.volume);
+		changeClass(this, _classes[_nowvolume], _classes[_nextvolume]);
 		return false;
 	});
 })();

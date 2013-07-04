@@ -142,6 +142,22 @@ input[type='file']{
 	background-position: 13px -125px;
 }
 
+#ctrl #volume.quarter{
+	background-position: -49px -125px;
+}
+
+#ctrl #volume.twoquarter{
+	background-position: -49px -198px;
+}
+
+#ctrl #volume.triquarter{
+	background-position: -49px -51px;
+}
+
+#ctrl #volume.full{
+	background-position: -49px -263px;
+}
+
 #ctrl #shuffleswitch{
 	background-position: 13px -414px;
 }
