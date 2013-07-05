@@ -131,6 +131,7 @@
 				core.audio.src = _URL;
 				core.audio.play();
 				core.now = id;
+				push(core.played, core.now);
 				core.ctrls.songtitle.innerHTML = core.list[id].name.replace(/\.mp3$|\.m4a$|\.ogg$/i, '').replace(/^\d{2,}(\ |\.|\-)/i, '');
 				var _now = get('[data-song-id="' + id + '"]');
 				_now.className += ' now';
@@ -156,6 +157,7 @@
 					core.audio.src = _URL;
 					core.audio.play();
 					core.now = id;
+					push(core.played, core.now);
 					core.ctrls.songtitle.innerHTML = core.list[id].name.replace(/\.mp3$|\.m4a$|\.ogg$/i, '').replace(/^\d{2,}(\ |\.|\-)/i, '');
 					var _now = get('[data-song-id="' + id + '"]');
 					_now.className += ' now';
@@ -281,7 +283,6 @@
 			_newvolume = _volumes[_newvolume];
 		}
 		core.audio.volume = _newvolume;
-		console.log(core.audio.volume);
 		return false;
 	};
 

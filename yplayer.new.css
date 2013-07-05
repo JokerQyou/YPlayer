@@ -341,14 +341,8 @@ span.song{
 }
 
 span.song.now{
-	-webkit-animation-name: shov;
-	animation-name: shov;
-	-webkit-animation-iteration-count: infinite;
-	animation-iteration-count: infinite;
-	-webkit-transition-timing-function: linear;
-	transition-timing-function: linear;
-	-webkit-animation-duration: 6s;
-	animation-duration: 6s;
+	-webkit-animation: shov 6s infinite linear;
+	animation: shov 6s infinite linear;
 }
 
 @keyframes shov{
