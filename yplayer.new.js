@@ -124,6 +124,7 @@
 	};
 
 	function play(id){
+		console.log(core);
 		if(core.ready){
 			if(!core.audio.src){
 				var _URL = getBlobURL(core.list[id]);
@@ -133,16 +134,17 @@
 				core.ctrls.songtitle.innerHTML = core.list[id].name.replace(/\.mp3$|\.m4a$|\.ogg$/i, '').replace(/^\d{2,}(\ |\.|\-)/i, '');
 				var _now = get('[data-song-id="' + id + '"]');
 				_now.className += ' now';
-				changeClass(core.ctrls.cdmask, 'paused', 'running');
-				changeClass(core.ctrls.play, 'play', 'pause');
 				return false;
 			}else{
 				if(id == core.now){
-					if(core.audio.paused){
+					if(!core.audio.ended && core.audio.paused){
 						core.audio.play();
-						changeClass(core.ctrls.cdmask, 'paused', 'running');
-						changeClass(core.ctrls.play, 'play', 'pause');
 						return false;
+					}else if(core.audio.ended){
+						var _URL = getBlobURL(core.list[id]);
+						revokeBlobURL(core.audio.src);
+						core.audio.src = _URL;
+						core.audio.play();
 					}else{
 						return false;
 					}
@@ -157,8 +159,6 @@
 					core.ctrls.songtitle.innerHTML = core.list[id].name.replace(/\.mp3$|\.m4a$|\.ogg$/i, '').replace(/^\d{2,}(\ |\.|\-)/i, '');
 					var _now = get('[data-song-id="' + id + '"]');
 					_now.className += ' now';
-					changeClass(core.ctrls.cdmask, 'paused', 'running');
-					changeClass(core.ctrls.play, 'play', 'pause');
 					return false;
 				}
 			}
@@ -170,8 +170,6 @@
 	function pause(){
 		if(!core.audio.paused){
 			core.audio.pause();
-			changeClass(core.ctrls.cdmask, 'running', 'paused');
-			changeClass(core.ctrls.play, 'pause', 'play');
 		}
 	};
 
@@ -246,6 +244,7 @@
 			}
 		}else if(core.cfg.loop == 'single'){
 			if(core.now){
+				console.log(core);
 				return core.now;
 			}else{
 				return 0;
@@ -376,10 +375,19 @@
 		return false;
 	});
 	core.audio.addEventListener('ended', function(){
+		console.log(core.audio.ended);
 		var _next = getNextSong();
 		if(_next != -1){
 			play(_next);
 		}
+	});
+	core.audio.addEventListener('play', function(){
+		changeClass(core.ctrls.play, 'play', 'pause');
+		changeClass(core.ctrls.cdmask, 'paused', 'running');
+	});
+	core.audio.addEventListener('pause', function(){
+		changeClass(core.ctrls.play, 'pause', 'play');
+		changeClass(core.ctrls.cdmask, 'running', 'paused');
 	});
 	core.ctrls.volume.addEventListener('click', function(){
 		var _classes = ['muted', 'quarter', 'twoquarter', 'triquarter', 'full'];

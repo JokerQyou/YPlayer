@@ -229,6 +229,11 @@ input[type='file']{
 	width: 69px;
 	height: 69px;
 	background: url(playwrapper.png) no-repeat scroll -200px 0;
+	opacity: 0;
+	-webkit-transition: all .25s ease-in-out;
+	   -moz-transition: all .25s ease-in-out;
+	     -o-transition: all .25s ease-in-out;
+	        transition: all .25s ease-in-out;
 }
 
 #play{
@@ -238,6 +243,19 @@ input[type='file']{
 	width: 69px;
 	height: 69px;
 	background: url(playwrapper.png) no-repeat scroll;
+	opacity: 0;
+	-webkit-transition: all .25s ease-in-out;
+	   -moz-transition: all .25s ease-in-out;
+	     -o-transition: all .25s ease-in-out;
+	        transition: all .25s ease-in-out;
+}
+
+#play:hover, #playwrapper:hover{
+	opacity: 1;
+	-webkit-transition: all .25s ease-in-out;
+	   -moz-transition: all .25s ease-in-out;
+	     -o-transition: all .25s ease-in-out;
+	        transition: all .25s ease-in-out;
 }
 
 #play.add{
@@ -333,6 +351,22 @@ span.song.now{
 	animation-duration: 6s;
 }
 
+@keyframes shov{
+	0%{
+		background-color: rgba(44, 44, 44, 0.98);
+		color: #cccccc;
+	}
+	50%{
+		background-color: #cccccc;
+		color: rgba(44, 44, 44, 0.98);
+	}
+	100%{
+		background-color: rgba(44, 44, 44, 0.98);
+		color: #cccccc;
+	}
+}
+
+
 @-webkit-keyframes shov{
 	0%{
 		background-color: rgba(44, 44, 44, 0.98);
@@ -348,13 +382,51 @@ span.song.now{
 	}
 }
 
+@-moz-keyframes shov{
+	0%{
+		background-color: rgba(44, 44, 44, 0.98);
+		color: #cccccc;
+	}
+	50%{
+		background-color: #cccccc;
+		color: rgba(44, 44, 44, 0.98);
+	}
+	100%{
+		background-color: rgba(44, 44, 44, 0.98);
+		color: #cccccc;
+	}
+}
+
+@-o-keyframes shov{
+	0%{
+		background-color: rgba(44, 44, 44, 0.98);
+		color: #cccccc;
+	}
+	50%{
+		background-color: #cccccc;
+		color: rgba(44, 44, 44, 0.98);
+	}
+	100%{
+		background-color: rgba(44, 44, 44, 0.98);
+		color: #cccccc;
+	}
+}
+
+
+
+
+
+
+
 #cdmaskabove{
 	background: -webkit-radial-gradient(circle farthest-side, rgba(146, 144, 144, 0.8), rgba(61, 61, 61, 0.8) 10%, rgba(209, 209, 209, 0.8) 50%, rgba(124, 124, 124, 0.8));
+	background: -moz-radial-gradient(circle farthest-side, rgba(146, 144, 144, 0.8), rgba(61, 61, 61, 0.8) 10%, rgba(209, 209, 209, 0.8) 50%, rgba(124, 124, 124, 0.8));
 	opacity: 0.6;
 }
 
 #cdmask{
 	background: -webkit-gradient(linear,center top,center bottom,from(rgba(221, 221, 221, 0.8)), to(rgba(0, 0, 0, 0.8)));
+	background: -moz-linear-gradient(top, rgba(221, 221, 221, 0.8), rgba(0, 0, 0, 0.8));
 	-webkit-animation: rotate 6s infinite linear;
 	animation: rotate 6s infinite linear;
 }
@@ -369,6 +441,17 @@ span.song.now{
 	animation-play-state: running;
 }
 
+
+
+@keyframes rotate{
+	0%{
+		transform:rotate(0deg);
+	}
+	100%{
+		transform:rotate(360deg);
+	}
+}
+
 @-webkit-keyframes rotate{
 	0%{
 		-webkit-transform:rotate(0deg);
@@ -377,6 +460,25 @@ span.song.now{
 		-webkit-transform:rotate(360deg);
 	}
 }
+
+@-moz-keyframes rotate{
+	0%{
+		-moz-transform:rotate(0deg);
+	}
+	100%{
+		-moz-transform:rotate(360deg);
+	}
+}
+
+@-o-keyframes rotate{
+	0%{
+		-o-transform:rotate(0deg);
+	}
+	100%{
+		-o-transform:rotate(360deg);
+	}
+}
+
 
 
 
@@ -397,7 +499,7 @@ span.song.now{
 	        transition: opacity .35s ease-in-out;
 }
 .mask.show{
-	opacity: 0.9
+	opacity: 0.9;
 	z-index: 1006;
 }
 .mask.hide{
