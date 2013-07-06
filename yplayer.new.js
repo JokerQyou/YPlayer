@@ -82,7 +82,6 @@
 			searchweb: get('#searchweb'),
 			shuffleswitch: get('#shuffleswitch'),
 			repeatswitch: get('#repeatswitch'),
-			redraw: get('#redraw'),
 			mask: get('.mask'),
 			cdmask: get('#cdmask'),
 			volume: get('#volume')
