@@ -41,6 +41,13 @@
 		return false;
 	};
 
+	/**
+	 * 更改元素的类名
+	 * @param  {Element} element  要更改的元素
+	 * @param  {String} oldClass 元素原来的类名
+	 * @param  {String} newClass 新类名
+	 * @return {None}          不返回值
+	 */
 	function changeClass(element, oldClass, newClass){
 		element.className = element.className.replace(oldClass, newClass);
 	};
@@ -124,9 +131,16 @@
 		switchList();
 	};
 
+	/**
+	 * 播放指定的歌曲
+	 * @param  {Integer} id 要播放的歌曲 ID
+	 * @return {Boolean}    返回 false
+	 */
 	function play(id){
 		console.log(core);
+		// 列表存在才能播放
 		if(core.ready){
+			// 核心 SRC 未定义，是初次播放
 			if(!core.audio.src){
 				var _URL = getBlobURL(core.list[id]);
 				core.audio.src = _URL;
@@ -138,18 +152,23 @@
 				_now.className += ' now';
 				return false;
 			}else{
+				// 核心 SRC 有定义，且要求播放当前正在播放的曲目
 				if(id == core.now){
+					// 处于暂停状态，继续播放即可
 					if(!core.audio.ended && core.audio.paused){
 						core.audio.play();
 						return false;
+					// 播放已经结束，重新生成 BlobURL 进行播放（ Firefox 下不作次处理会有问题）
 					}else if(core.audio.ended){
 						var _URL = getBlobURL(core.list[id]);
 						revokeBlobURL(core.audio.src);
 						core.audio.src = _URL;
 						core.audio.play();
+					// 正在播放指定的曲目，不作任何操作
 					}else{
 						return false;
 					}
+				// 核心 SRC 有定义，且要求播放不同的曲目
 				}else{
 					revokeBlobURL(core.audio.src);
 					var _now = get('[data-song-id="' + core.now + '"]');
@@ -166,16 +185,25 @@
 				}
 			}
 		}else{
+			// 没有列表，无法播放
 			return false;
 		}
 	};
 
+	/**
+	 * 暂停播放
+	 * @return {None} 不返回值
+	 */
 	function pause(){
 		if(!core.audio.paused){
 			core.audio.pause();
 		}
 	};
 
+	/**
+	 * 更新进度条
+	 * @return {Boolean} 返回 false
+	 */
 	function updateProgress(){
 		if(!core.audio.src){
 			return false;
@@ -188,16 +216,29 @@
 			}
 			core.ctrls.nowprogress.style.width = _progress + '%';
 		}
+		return false;
 	};
 
+	/**
+	 * 产生全屏遮罩
+	 * @return {None} 不返回值
+	 */
 	function mask(){
 		changeClass(core.ctrls.mask, 'hide', 'show');
 	};
 
+	/**
+	 * 解开全屏遮罩
+	 * @return {None} 不返回值
+	 */
 	function unmask(){
 		changeClass(core.ctrls.mask, 'show', 'hide');
 	};
 
+	/**
+	 * 切换播放列表显示状态
+	 * @return {Boolean} 返回 false
+	 */
 	function switchList(){
 		var _list = core.ctrls.playlist;
 		if(inArray('rhide', _list.classList)){
@@ -208,6 +249,11 @@
 		return false;
 	};
 
+	/**
+	 * 在列表中搜索指定关键词
+	 * @param  {String} keyword 要搜索的关键词
+	 * @return {Element|Boolean}         如果找到匹配项目则返回该元素，否则返回 false
+	 */
 	function searchList(keyword){
 		var _list = core.ctrls.playlist;
 		for(var _i = 0; _i < _list.children.length; _i ++){
@@ -218,6 +264,10 @@
 		return false;
 	};
 
+	/**
+	 * 计算下一首歌的 ID
+	 * @return {Integer} 若不应继续播放了，返回 -1 ；否则返回应当播放的歌曲 ID
+	 */
 	function getNextSong(){
 		if(core.cfg.loop == 'no'){
 			if(core.played.length == core.list.length){
@@ -269,6 +319,11 @@
 		}
 	};
 
+	/**
+	 * 打开新窗口进行网络搜索
+	 * @param  {Integer} id 要搜索的歌曲 ID
+	 * @return {None}    不返回值
+	 */
 	function searchWeb(id){
 		var _API = 'https://www.google.com/search?q=';
 		var _keyword = core.list[id].name.replace(/\.mp3$|\.m4a$|\.ogg$/i, '').replace(/^\d{2,}(\ |\.|\-)/i, '');
@@ -276,6 +331,11 @@
 		window.open(_API, 'ywebsearch');
 	};
 
+	/**
+	 * 设置音量
+	 * @param  {String} str 音量类名，对应 5 个档次音量中的一个
+	 * @return {Boolean}     返回 false
+	 */
 	function updateVolume(str){
 		var _volumes = [0, 0.25, 0.5, 0.75, 1];
 		var _classes = ['muted', 'quarter', 'twoquarter', 'triquarter', 'full'];
@@ -289,6 +349,10 @@
 
 	/**
 	 * 事件绑定
+	 */
+	/**
+	 * 播放按钮
+	 * 同时作为添加文件夹/文件的按钮
 	 */
 	core.ctrls.play.addEventListener('click', function(){
 		if(!core.ready){
@@ -308,15 +372,24 @@
 		}
 		return false;
 	});
+	/**
+	 * 下一曲
+	 */
 	core.ctrls.next.addEventListener('click', function(){
 		if(core.ready){
 			var _next = getNextSong();
 			play(_next);
 		}
 	});
+	/**
+	 * 触发添加列表的动作
+	 */
 	core.ctrls.file.addEventListener('change', function(){
 		parseDir(this.files);
 	});
+	/**
+	 * 从播放列表播放歌曲
+	 */
 	core.ctrls.playlist.addEventListener('click', function(e){
 		e = e || window.event;
 		var _target = e.target || e.srcElement;
@@ -325,10 +398,23 @@
 		}
 		return false;
 	});
+	/**
+	 * 切换播放列表的显示状态
+	 */
 	core.ctrls.listswitch.addEventListener('click', switchList);
 
+	/**
+	 * 自动更新进度条
+	 */
 	core.audio.addEventListener('timeupdate', updateProgress);
+	/**
+	 * 在遮罩上点击，自动撤销遮罩
+	 */
 	core.ctrls.mask.addEventListener('click', unmask);
+	/**
+	 * 搜索快捷键： Ctrl + F
+	 * 关闭搜索和播放列表： Esc
+	 */
 	document.onkeydown = function(e){
 		e = e || window.event;
 		if(e.keyCode == 70 && e.ctrlKey){
@@ -341,18 +427,27 @@
 			changeClass(core.ctrls.playlist, 'rshow', 'rhide');
 		}
 	};
+	/**
+	 * 搜索功能
+	 */
 	core.ctrls.search.addEventListener('keydown', function(){
 		var _result = searchList(this.value);
 		if(!!_result){
 			core.ctrls.playlist.scrollTop = _result.offsetTop;
 		}
 	});
+	/**
+	 * 在网络上搜索当前播放的歌曲
+	 */
 	core.ctrls.searchweb.addEventListener('click', function(){
 		if(core.ready && core.now){
 			searchWeb(core.now);
 		}
 		return false;
 	});
+	/**
+	 * 切换随机播放状态
+	 */
 	core.ctrls.shuffleswitch.addEventListener('click', function(){
 		if(core.cfg.shuffle){
 			core.cfg.shuffle = false;
@@ -363,6 +458,9 @@
 		}
 		return false;
 	});
+	/**
+	 * 切换循环播放状态
+	 */
 	core.ctrls.repeatswitch.addEventListener('click', function(){
 		var _allowed = ['no', 'list', 'single'];
 		var _nowstate = _allowed.indexOf(core.cfg.loop);
@@ -376,6 +474,9 @@
 		changeClass(this, _allowed[_nowstate], _allowed[_nextstate]);
 		return false;
 	});
+	/**
+	 * 歌曲播放完毕时自动播放下一曲
+	 */
 	core.audio.addEventListener('ended', function(){
 		console.log(core.audio.ended);
 		var _next = getNextSong();
@@ -383,14 +484,23 @@
 			play(_next);
 		}
 	});
+	/**
+	 * 歌曲开始播放时切换播放按钮为暂停样式
+	 */
 	core.audio.addEventListener('play', function(){
 		changeClass(core.ctrls.play, 'play', 'pause');
 		changeClass(core.ctrls.cdmask, 'paused', 'running');
 	});
+	/**
+	 * 歌曲暂停播放时切换播放按钮为播放样式
+	 */
 	core.audio.addEventListener('pause', function(){
 		changeClass(core.ctrls.play, 'pause', 'play');
 		changeClass(core.ctrls.cdmask, 'running', 'paused');
 	});
+	/**
+	 * 音量档次切换
+	 */
 	core.ctrls.volume.addEventListener('click', function(){
 		var _classes = ['muted', 'quarter', 'twoquarter', 'triquarter', 'full'];
 		var _nowvolume = _classes.indexOf(core.cfg.volume);
@@ -405,9 +515,11 @@
 		changeClass(this, _classes[_nowvolume], _classes[_nextvolume]);
 		return false;
 	});
+	/**
+	 * 歌曲内时间跳转
+	 */
 	core.ctrls.progressContainer.addEventListener('click', function(e){
 		e = e || window.event;
-		console.log(e.offsetX);
 		var _rate = e.offsetX / this.clientWidth;
 		var _timetarget = _rate * core.audio.duration;
 		core.audio.currentTime = _timetarget;
