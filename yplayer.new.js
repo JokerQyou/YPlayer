@@ -67,6 +67,7 @@
 			file: get('#file'),
 			playlist: get('#playlist'),
 			listswitch: get('#listswitch'),
+			progressContainer: get('#prog'),
 			progress: get('#progress'),
 			nowprogress: get('#now'),
 			songtitle: get('#songtitle'),
@@ -402,6 +403,14 @@
 		core.cfg.volume = _classes[_nextvolume];
 		updateVolume(core.cfg.volume);
 		changeClass(this, _classes[_nowvolume], _classes[_nextvolume]);
+		return false;
+	});
+	core.ctrls.progressContainer.addEventListener('click', function(e){
+		e = e || window.event;
+		console.log(e.offsetX);
+		var _rate = e.offsetX / this.clientWidth;
+		var _timetarget = _rate * core.audio.duration;
+		core.audio.currentTime = _timetarget;
 		return false;
 	});
 })();
