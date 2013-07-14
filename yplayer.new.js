@@ -67,6 +67,7 @@
 		now: null,
 		list: [],
 		ready: false,
+		notification: false,
 		played: [],
 		ctrls: {
 			play: get('#play'),
@@ -130,6 +131,30 @@
 		switchList();
 	};
 
+	function notify(id){
+		if(!!window.webkitNotifications){
+			if(window.webkitNotifications.checkPermission() == 0){
+				core.notification = true;
+			}else{
+				window.webkitNotifications.requestPermission();
+			}
+			console.log(core);
+		}
+		if(core.notification){
+			var _item = core.list[id];
+			var _timeout = 5000;
+			var _name = _item.name.replace(/\.mp3$|\.m4a$|\.ogg$/i, '').replace(/^\d{2,}(\ |\.|\-)/i, '');
+			var _notification = window.webkitNotifications.createNotification('music.png', 'YPlayer', '正在播放：' + _name);
+			_notification.ondisplay = function(e){
+				e = e || window.event;
+				setTimeout(function(){
+					e.currentTarget.cancel();
+				}, _timeout);
+			};
+			_notification.show();
+		}
+	};
+
 	/**
 	 * 播放指定的歌曲
 	 * @param  {Integer} id 要播放的歌曲 ID
@@ -149,6 +174,7 @@
 				core.ctrls.songtitle.innerHTML = core.list[id].name.replace(/\.mp3$|\.m4a$|\.ogg$/i, '').replace(/^\d{2,}(\ |\.|\-)/i, '');
 				var _now = get('[data-song-id="' + id + '"]');
 				_now.className += ' now';
+				notify(core.now);
 				return false;
 			}else{
 				// 核心 SRC 有定义，且要求播放当前正在播放的曲目
@@ -163,6 +189,7 @@
 						revokeBlobURL(core.audio.src);
 						core.audio.src = _URL;
 						core.audio.play();
+						notify(core.now);
 					// 正在播放指定的曲目，不作任何操作
 					}else{
 						return false;
@@ -180,6 +207,7 @@
 					core.ctrls.songtitle.innerHTML = core.list[id].name.replace(/\.mp3$|\.m4a$|\.ogg$/i, '').replace(/^\d{2,}(\ |\.|\-)/i, '');
 					var _now = get('[data-song-id="' + id + '"]');
 					_now.className += ' now';
+					notify(core.now);
 					return false;
 				}
 			}
@@ -524,4 +552,8 @@
 		core.audio.currentTime = _timetarget;
 		return false;
 	});
+	/**
+	 * Desktop notification request
+	 */
+	// window.webkitNotifications.requestPermission();
 })();
