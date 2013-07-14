@@ -293,6 +293,7 @@ input[type='file']{
 	padding: 10px;
 	margin-right: -20px;
 	overflow-y: auto;
+	overflow-x: hidden;
 }
 
 .lhide{
