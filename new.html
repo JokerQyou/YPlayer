@@ -1,54 +1,60 @@
 <!doctype html>
 <html>
 <head>
-	<meta charset="utf-8">
-	<link rel="stylesheet" href="yplayer.new.css">
-	<title>Chrome 下的本地音乐播放器 - Yplayer Local</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="yplayer.new.css">
+    <title>Chrome 下的本地音乐播放器 - Yplayer Local</title>
 </head>
 <body>
-	<div class="top fixed full" id="prog">
-		<div id="progress"></div>
-		<div id="now"></div>
-	</div>
 
-	<div class="absolute full hfull left top" id="board">
-		<div id="cdwrapper">
-			<div id="cdmask" class="paused"></div>
-			<div id="cdmaskabove">
-				<div id="playwrapper">
-					<a href="#" id="play" class="add"></a>
-				</div>
-			</div>
-			<p id="songtitle">YPlayer</p>
-		</div>
-	</div>
+    <div class="fixed full hfull left top" id="board">
+        <div id="cdwrapper">
+            <div class="" id="prog">
+                <div id="now"></div>
+            </div>
+            <div id="cdmask" class="paused">
+                <img src="cover-empty.png" alt="Music cover">
+            </div>
+            <div id="cdmaskabove">
+                <div id="playwrapper">
+                    <a href="#" id="play" class="add"></a>
+                </div>
+            </div>
+            <p id="songtitle">YPlayer</p>
+        </div>
+    </div>
 
-	<div class="fade rhide half hfull absolute right top" id="playlist"></div>
+    <div class="fade rhide half hfull absolute right top" id="playlist"></div>
 
-	<div id="search" class="fade lhide half absolute left top"><input id="keyword" type="text" autocomplete="off" placeholder="Type &amp; enter to search through playlist"></div>
+    <div id="search" class="fade lhide half absolute left top"><input id="keyword" type="text" autocomplete="off" placeholder="Type &amp; enter to search through playlist"></div>
 
-	<div class="bottom fixed full" id="ctrl">
-		<a href="#" class="" id="yplayer"></a>
-		<div class="split"></div>
-		<a href="#" class="btn" id="listswitch"></a>
-		<!-- <a href="#" class="btn" id="redraw"></a> -->
-		<a href="#" class="btn full" id="volume"></a>
-		<a href="#" class="btn false" id="shuffleswitch"></a>
-		<a href="#" class="btn no" id="repeatswitch"></a>
-		<div class="split"></div>
-		<a href="#" class="btn fright" id="searchweb"></a>
-		<a href="#" class="btn fright" id="next"></a>
-	</div>
-	<input type="file" id="file" webkitdirectory multiple>
-	<div class="mask hide">
-		<div class="tip">Loading...</div>
-	</div>
+    <div class="bottom fixed full" id="ctrl">
+        <a href="#" class="" id="yplayer"></a>
+        <div class="split"></div>
+        <a href="#" class="btn" id="listswitch"></a>
+        <!-- <a href="#" class="btn" id="redraw"></a> -->
+        <a href="#" class="btn full" id="volume"></a>
+        <a href="#" class="btn false" id="shuffleswitch"></a>
+        <a href="#" class="btn no" id="repeatswitch"></a>
+        <div class="split"></div>
+        <a href="#" class="btn fright" id="searchweb"></a>
+        <a href="#" class="btn fright" id="next"></a>
+    </div>
+    <input type="file" id="file" webkitdirectory multiple>
+    <div class="mask hide">
+        <div class="tip">
+            <div class="spinner">
+                <div class="double-bounce1"></div>
+                <div class="double-bounce2"></div>
+            </div>
+        </div>
+    </div>
 </body>
 <script type="text/javascript" src="id3-minimized.js"></script>
 <script type="text/javascript" src="yplayer.new.js"></script>
 <script type="text/javascript">
-	document.body.onselectstart = function(){
-		return false;
-	};
+    document.body.onselectstart = function(){
+        return false;
+    };
 </script>
 </html>

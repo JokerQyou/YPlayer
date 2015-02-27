@@ -37,6 +37,7 @@
         repeatswitch: get('#repeatswitch'),
         mask: get('.mask'),
         cdmask: get('#cdmask'),
+        cover: get('#cdmask img'),
         volume: get('#volume')
     };
     yplayer.prototype.play = function(){
@@ -48,12 +49,22 @@
                 // 当前没有『正在播放』曲目
                 return this.next();
             }else{
-                if(!this.__audio.src){
-                    this.__audio.src = getBlobURL(this.__filelist[this.__playlist[this.__now]]);
-                }
-                this.__audio.play();
+                // Fill cover image
+                this.__update_cover().__animate_cover(true).__audio.play();
             }
             this.__config.debug && console.log('Now playing info: index in playlist: ' + this.__now + '; index in filelist: ' + this.__playlist[this.__now]);
+            this.__toggle_class(this.__dom.play, 'play', false).__toggle_class(this.__dom.play, 'pause', true);
+        }
+        return this;
+    };
+    yplayer.prototype.__animate_cover = function(run){
+        this.__dom.cdmask.style.webkitAnimationPlayState = (!!run)?('running'):('paused');
+        return this;
+    };
+    yplayer.prototype.__update_cover = function(){
+        var picture = this.__filelist[this.__playlist[this.__now]].info.picture || 'cover-empty.png';
+        if(this.__dom.cover.src != picture){
+            this.__dom.cover.src = picture;
         }
         return this;
     };
@@ -66,13 +77,15 @@
             this.__config.debug && console.log('Song (playlist index ' + this.__now + ') paused');
         }else{
             if(time < 0){
-                this.__audio.stop();
+                // FIXME
+                this.__audio.pause();
                 this.__config.debug && console.log('Song (playlist index ' + this.__now + ') stopped');
             }else{
                 this.__audio.pause();
                 this.__config.debug && console.log('Song (playlist index ' + this.__now + ') paused');
             }
         }
+        this.__animate_cover(false).__toggle_class(this.__dom.play, 'pause', false).__toggle_class(this.__dom.play, 'play', true);
         return this;
     };
     yplayer.prototype.stop = function(){
@@ -116,8 +129,22 @@
     yplayer.prototype.__play_new = function(){
         this.stop();
         revokeBlobURL(this.__audio.src);
-        this.__audio.src = '';
+        this.__audio.src = getBlobURL(this.__filelist[this.__playlist[this.__now]]);
         return this.play();
+    };
+    yplayer.prototype.__update_progress = function(){
+        var percentage = 0, BACKCOLOR = '#ececec', FORECOLOR = '#84A540';
+        if(this.__audio.currentTime > 0 && this.__audio.currentTime < this.__audio.duration){
+            percentage = this.__audio.currentTime / this.__audio.duration;
+        }
+        var deg = percentage * 360;
+        if(deg <= 180){
+            var g = 'linear-gradient(' + (90 + deg) + 'deg, transparent 50%, ' + BACKCOLOR + ' 50%), linear-gradient(90deg, ' + BACKCOLOR + ' 50%, transparent 50%)';
+        }else{
+            var g = 'linear-gradient(' + (deg - 90) + 'deg, transparent 50%, ' + FORECOLOR + ' 50%), linear-gradient(90deg, ' + BACKCOLOR + ' 50%, transparent 50%)';
+        }
+        this.__dom.nowprogress.style.backgroundImage = g;
+        return this;
     };
     yplayer.prototype.config = function(options){
         for(var _key in options){
@@ -159,6 +186,7 @@
         w.postMessage({files: this.__filelist});
         var _self = this;
         w.onmessage = function(e){
+            _self.__config.debug && console.log('ID3 info processing finished by worker, saving data...');
             for (var i = e.data.length - 1; i >= 0; i--) {
                 var _tags = e.data[i]
                 for (var j = _self.__filelist.length - 1; j >= 0; j--) {
@@ -171,9 +199,13 @@
                     }
                 };
             };
-            _self.__config.debug && console.log('ID3 info processing finished by worker');
             w.terminate();
             w = undefined;
+            _self.__ready = true;
+            _self.__config.debug && console.log('YPlayer is now ready');
+            _self.__toggle_mask(false);
+            var _p = _self.__dom.play;
+            _self.__toggle_class(_p, 'add', false).__toggle_class(_p, 'play', true);
         };
     };
     yplayer.prototype.load = function(files){
@@ -187,22 +219,68 @@
                 this.__playlist.push(this.__filelist.length - 1);
             }
         };
-        this.parse_info();
         this.__config.debug && console.log(files.length + ' files parsed, ' + this.__filelist.length + ' files accepted');
-        this.__ready = true;
-        this.__config.debug && console.log('YPlayer is now ready');
+        this.__config.debug && console.log('YPlayer is now parsing ID3 tags in different worker thread');
+        this.parse_info();
         return this;
     };
     yplayer.prototype.playing = function(){
         if(!this.__ready){
             return false;
         }
-        return !this.__audio.paused;
+        return !this.__audio.paused && !!this.__audio.played.length;
     };
     yplayer.prototype.search = function(keyword){
         //
     };
+    yplayer.prototype.notify = function(noti){
+        if(!window.Notification){
+            this.__config.debug && console.log('Notification not supported');
+            return this;
+        }
+        var _notify = function(n){
+            var notification = new window.Notification(
+                n.title, 
+                {
+                    body: n.body, 
+                    icon: n.icon || null
+                }
+            );
+        };
+        var _self = this;
+        if(window.Notification.permission == 'granted'){
+            _self.__config.debug && console.log('Notification permission already granted');
+            if(noti){
+                _notify(noti);
+            }
+        }else if(window.Notification.permission !== 'denied'){
+            window.Notification.requestPermission(function(permission){
+                _self.__config.debug && console.log('Notification permission ' + permission + ' by user');
+                if(permission === 'granted' && noti){
+                    _notify(noti);
+                }
+            });
+        }else{
+            _self.__config.debug && console.log('Notification permission already denied by user');
+        }
+        return _self;
+    };
+    yplayer.prototype.__toggle_class = function(elem, _class, add){
+        if(add){
+            if(elem.className.indexOf(_class) == -1){
+                elem.className += _class;
+            }
+        }else{
+            var reg = new RegExp(_class, 'gi');
+            elem.className = elem.className.replace(reg, '');
+        }
+        return this;
+    };
+    yplayer.prototype.__toggle_mask = function(show){
+        return this.__toggle_class(this.__dom.mask, 'hide', !show);
+    };
     yplayer.prototype.init = function(){
+        this.__audio.src = '';
         var __file_control = create('input');
         __file_control.type = 'file';
         __file_control.webkitdirectory = true;
@@ -220,9 +298,24 @@
                     _self.play();
                 }
             }else{
+                _self.__toggle_mask(true);
                 __file_control.click();
             }
         });
+        this.__dom.mask.addEventListener('click', function(e){
+            // Allow mask to be dismissed when user cancelled folder selection
+            if(!_self.__ready && !__file_control.files.length){
+                _self.__toggle_mask(false);
+            }
+        });
+        this.__audio.addEventListener('timeupdate', function(){
+            _self.__update_progress();
+        });
+        this.__audio.addEventListener('ended', function(){
+            _self.next();
+        });
+        // Send empty notification to gain permission
+        this.notify();
         return this;
     };
     obj.yplayer = new yplayer();
